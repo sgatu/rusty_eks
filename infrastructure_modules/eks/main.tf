@@ -35,20 +35,6 @@ resource "aws_eks_addon" "coredns" {
   depends_on        = [module.eks]
   count             = var.create && var.addon_coredns ? 1 : 0
 }
-/*resource "aws_iam_policy" "worker_policy" {
-  name        = "worker-policy-${var.cluster_name}"
-  description = "Worker policy for the ALB Ingress"
-
-  policy = data.local_file.iampolicy.content
-  count  = var.create && var.aws_alb_controller ? 1 : 0
-}
-
-resource "aws_iam_role_policy_attachment" "additional" {
-  for_each = var.create && var.aws_alb_controller ? module.eks[0].self_managed_node_groups : {}
-
-  policy_arn = aws_iam_policy.worker_policy[0].arn
-  role       = each.value.iam_role_name
-}*/
 
 module "load_balancer_controller" {
   source = "git::https://github.com/DNXLabs/terraform-aws-eks-lb-controller.git"
@@ -60,25 +46,4 @@ module "load_balancer_controller" {
 
   count = var.create && var.aws_alb_controller ? 1 : 0
 }
-/*
-resource "helm_release" "ingress" {
-  name       = "ingress"
-  chart      = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  version    = "1.4.6"
 
-  set {
-    name  = "autoDiscoverAwsRegion"
-    value = "true"
-  }
-  set {
-    name  = "autoDiscoverAwsVpcID"
-    value = "true"
-  }
-  set {
-    name  = "clusterName"
-    value = var.cluster_name
-  }
-  count = var.create && var.aws_alb_controller ? 1 : 0
-}
-*/
