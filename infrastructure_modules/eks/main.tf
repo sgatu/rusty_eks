@@ -47,3 +47,38 @@ module "load_balancer_controller" {
   count = var.create && var.aws_alb_controller ? 1 : 0
 }
 
+module "ecr" {
+  source          = "terraform-aws-modules/ecr/aws"
+  repository_name = local.repository_name
+  repository_type = "private"
+  /*repository_read_access_arns       = ["arn:aws:iam::012345678901:role/terraform"]
+  repository_read_write_access_arns = ["arn:aws:iam::012345678901:role/terraform"]*/
+
+  repository_lifecycle_policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1,
+        description  = "Keep last 30 images",
+        selection = {
+          tagStatus     = "tagged",
+          tagPrefixList = ["v"],
+          countType     = "imageCountMoreThan",
+          countNumber   = 12
+        },
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+  registry_scan_rules = [
+    {
+      scan_frequency = "SCAN_ON_PUSH"
+      filter         = "*"
+      filter_type    = "WILDCARD"
+    }
+  ]
+
+  tags  = var.tags
+  count = var.create ? 1 : 0
+}

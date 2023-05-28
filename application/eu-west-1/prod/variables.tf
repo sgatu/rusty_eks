@@ -50,11 +50,25 @@ variable "delete_bastion_private_key_on_destroy" {
 
 variable "create_rds" {
   description = "Create RDS instance"
-  type = bool
-  default =false
+  type        = bool
+  default     = false
 }
 variable "create_eks" {
   description = "Create EKS cluster"
-  type = bool
-  default = true
+  type        = bool
+  default     = true
+}
+variable "jenkins_admin_user" {
+  description = "Jenkins admin user"
+  type        = string
+  sensitive   = true
+}
+variable "jenkins_admin_password" {
+  description = "Jenkins admin password"
+  type        = string
+  sensitive   = true
+}
+variable "eks_main_node_group_instance_type" {
+  description = "EKS main node group instance type"
+  type = string
 }

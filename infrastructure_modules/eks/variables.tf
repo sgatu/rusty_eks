@@ -72,6 +72,11 @@ variable "create" {
 
 variable "extra_security_group" {
   description = "Extra security group to add to eks cluster"
-  type = string
-  default = null
+  type        = string
+  default     = null
+}
+variable "repository_name" {
+  description = "ECR repository name"
+  type        = string
+  default     = null
 }

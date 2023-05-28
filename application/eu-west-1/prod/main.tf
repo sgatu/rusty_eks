@@ -68,10 +68,10 @@ module "eks" {
       use_custom_launch_template = false
       name                       = "app"
       max_size                   = 5
-      desired_size               = 3
+      desired_size               = 2
       capacity_type              = "SPOT"
       platform                   = "linux"
-      instance_type              = "t3.small"
+      instance_type              = var.eks_main_node_group_instance_type
       key_name                   = "main-kp"
       vpc_security_group_ids     = [module.vpc.private_sg_id]
     }
@@ -83,3 +83,9 @@ module "eks" {
 
 }
 
+module "devops" {
+  source         = "../../../infrastructure_modules/devops"
+  admin_password = var.jenkins_admin_password
+  admin_user     = var.jenkins_admin_user
+  depends_on     = [module.eks]
+}
