@@ -153,7 +153,7 @@ controller:
         path: '{{ default "" .Values.controller.jenkinsUriPrefix }}/login'
         port: http
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds:  5
       failureThreshold: 12
     livenessProbe:
       failureThreshold: 5
@@ -274,7 +274,21 @@ controller:
   #  - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
   #  - "new groovy.json.JsonSlurperClassic"
   # List of groovy init scripts to be executed during Jenkins controller start
-  initScripts: []
+  initScripts: 
+    jb: |-
+      import hudson.plugins.git.*;
+      import jenkins.model.*
+
+      def scm = new GitSCM("git@github.com:sgatu/hello_rust.git")
+      scm.branches = [new BranchSpec("*/main")];
+
+      def flowDefinition = new org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition(scm, "Jenkinsfile")
+
+      def parent = Jenkins.instance
+      def job = new org.jenkinsci.plugins.workflow.job.WorkflowJob(parent, "New Job")
+      job.definition = flowDefinition
+
+      parent.reload()
   #  - |
   #    print 'adding global pipeline libraries, register properties, bootstrap jobs...'
 
@@ -327,6 +341,11 @@ controller:
         creationOfLegacyTokenEnabled: false
         tokenGenerationOnCreationEnabled: false
         usageStatisticsEnabled: true
+      gitHostKeyVerificationConfiguration:
+        sshHostKeyVerificationStrategy:
+          manuallyProvidedKeyVerificationStrategy:
+            approvedHostKeys: |-
+              github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
     # Ignored if securityRealm is defined in controller.JCasC.configScripts
     securityRealm: |-
       local:
@@ -786,12 +805,13 @@ persistence:
   accessMode: "ReadWriteOnce"
   size: "8Gi"
   volumes:
-  #  - name: nothing
-  #    emptyDir: {}
+    - name: jenkins-ssh-key
+      secret:
+        secretName: jenkins-ssh-key
   mounts:
-  #  - mountPath: /var/nothing
-  #    name: nothing
-  #    readOnly: true
+    - mountPath: /var/jenkins_home/.ssh
+      name: jenkins-ssh-key
+      readOnly: true
 
 networkPolicy:
   # Enable creation of NetworkPolicy resources.

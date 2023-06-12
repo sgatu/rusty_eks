@@ -20,6 +20,7 @@ module "vpc" {
   security_group_prefix = var.eks_cluster_name
   has_bastion           = true
 }
+
 module "bastion" {
   source            = "../../../infrastructure_modules/bastion"
   security_group_id = module.vpc.bastion_sg_id
@@ -74,6 +75,9 @@ module "eks" {
       instance_type              = var.eks_main_node_group_instance_type
       key_name                   = "main-kp"
       vpc_security_group_ids     = [module.vpc.private_sg_id]
+      iam_role_additional_policies = {
+        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      }
     }
   }
   addon_coredns      = true
