@@ -1,3 +1,8 @@
+/*resource "aws_iam_policy" "csi_policy" {
+  policy      = data.local_file.csi_policy.content
+  name_prefix = "${var.cluster_name}-CSI"
+}*/
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.0"
@@ -12,6 +17,12 @@ module "eks" {
     }
     vpc-cni = {
       most_recent = true
+    },
+    coredns = {
+      most_recent = true
+    },
+    aws-ebs-csi-driver = {
+      most_recent = true
     }
   }
   vpc_id                           = var.vpc_id
@@ -21,11 +32,21 @@ module "eks" {
   self_managed_node_group_defaults = var.node_group_defaults
   create_aws_auth_configmap        = true
   tags                             = var.tags
-  count                            = var.create ? 1 : 0
+  aws_auth_users = [
+    {
+      userarn  = "arn:aws:iam::853492837442:root"
+      username = "sg.bacon"
+      groups   = ["system:masters"]
+    }
+  ]
+  iam_role_additional_policies = {
+    AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  }
+  count = var.create ? 1 : 0
 }
 
 
-resource "aws_eks_addon" "coredns" {
+/*resource "aws_eks_addon" "coredns" {
   cluster_name      = module.eks[0].cluster_name
   addon_name        = "coredns"
   addon_version     = var.core_dns_version
@@ -34,7 +55,7 @@ resource "aws_eks_addon" "coredns" {
   tags              = merge(var.tags, { eks_addon = "coredns" })
   depends_on        = [module.eks]
   count             = var.create && var.addon_coredns ? 1 : 0
-}
+}*/
 
 module "load_balancer_controller" {
   source = "git::https://github.com/DNXLabs/terraform-aws-eks-lb-controller.git"
