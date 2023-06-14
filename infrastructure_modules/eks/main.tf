@@ -69,14 +69,14 @@ module "load_balancer_controller" {
   count = var.create && var.aws_alb_controller ? 1 : 0
 }
 
-resource "helm_release" "secrets-store-csi" {
+/*resource "helm_release" "secrets-store-csi" {
   name       = "secrets-store-csi"
   repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
   chart      = "secrets-store-csi-driver"
   namespace  = "kube-system"
   version    = "1.3.0"
   values     = ["${file(format("%s/config/jenkins/values.yaml", path.module))}"]
-}
+}*/
 module "ecr" {
   source          = "terraform-aws-modules/ecr/aws"
   repository_name = local.repository_name

@@ -26,6 +26,7 @@ module "bastion" {
   security_group_id = module.vpc.bastion_sg_id
   subnet_id         = module.vpc.public_subnet_ids[0]
   availability_zone = module.vpc.azs[0]
+  is_spot           = false
   tags = {
     source = "Terraform"
     Name   = "Bastion"
@@ -86,10 +87,13 @@ module "eks" {
   create             = var.create_eks
 
 }
-
 module "devops" {
   source         = "../../../infrastructure_modules/devops"
   admin_password = var.jenkins_admin_password
   admin_user     = var.jenkins_admin_user
-  depends_on     = [module.eks]
+  git_key_path = {
+    private = local.devops.git_key_path
+    public  = local.devops.git_key_pub_path
+  }
+  depends_on = [module.eks]
 }

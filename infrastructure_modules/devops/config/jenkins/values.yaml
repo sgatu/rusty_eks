@@ -239,9 +239,11 @@ controller:
   # List of plugins to be install during Jenkins controller start
   installPlugins:
     - kubernetes:3937.vd7b_82db_e347b_
+    - kubernetes-credentials-provider:1.225.v14f9e6b_28f53
     - workflow-aggregator:581.v0c46fa_697ffd
     - git:5.1.0
     - configuration-as-code:1647.ve39ca_b_829b_42
+    - job-dsl:1.84
 
   # Set to false to download the minimum required version of all dependencies.
   installLatestPlugins: true
@@ -274,21 +276,7 @@ controller:
   #  - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
   #  - "new groovy.json.JsonSlurperClassic"
   # List of groovy init scripts to be executed during Jenkins controller start
-  initScripts: 
-    jb: |-
-      import hudson.plugins.git.*;
-      import jenkins.model.*
-
-      def scm = new GitSCM("git@github.com:sgatu/hello_rust.git")
-      scm.branches = [new BranchSpec("*/main")];
-
-      def flowDefinition = new org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition(scm, "Jenkinsfile")
-
-      def parent = Jenkins.instance
-      def job = new org.jenkinsci.plugins.workflow.job.WorkflowJob(parent, "New Job")
-      job.definition = flowDefinition
-
-      parent.reload()
+  initScripts: {}
   #  - |
   #    print 'adding global pipeline libraries, register properties, bootstrap jobs...'
 
@@ -335,6 +323,27 @@ controller:
       welcome-message: |
         jenkins:
           systemMessage: Welcome to the jungle
+      # ToDo: Move to repository or file that declares all jobs
+      pipeline-job: |
+        jobs:
+          - script: >
+              pipelineJob('test-job') {
+                definition {
+                  cpsScm {
+                    scm {
+                      git {
+                        remote {
+                          url('git@github.com:sgatu/hello_rust.git')
+                          credentials('{{ .Values.credentials.main_git_credential_id }}')
+                        }
+                        branch('*/main')
+                      }
+                    }
+                    scriptPath("JenkinsFile")
+                    lightweight()
+                  }
+                }
+              }
     # Allows adding to the top-level security JCasC section. For legacy,  default the chart includes apiToken configurations
     security:
       apiToken:
@@ -804,14 +813,6 @@ persistence:
   labels: {}
   accessMode: "ReadWriteOnce"
   size: "8Gi"
-  volumes:
-    - name: jenkins-ssh-key
-      secret:
-        secretName: jenkins-ssh-key
-  mounts:
-    - mountPath: /var/jenkins_home/.ssh
-      name: jenkins-ssh-key
-      readOnly: true
 
 networkPolicy:
   # Enable creation of NetworkPolicy resources.
@@ -833,7 +834,7 @@ networkPolicy:
 ## Install Default RBAC roles and bindings
 rbac:
   create: true
-  readSecrets: false
+  readSecrets: true
 
 serviceAccount:
   create: true
@@ -927,3 +928,5 @@ awsSecurityGroupPolicies:
     - name: ""
       securityGroupIds: []
       podSelector: {}
+credentials:
+  main_git_credential_id: ""

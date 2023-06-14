@@ -36,7 +36,7 @@ terraform {
       version = "~> 2.20.0"
     }
   }
-  required_version = "~> 1.0"
+  required_version = "~> 1.2"
   backend "s3" {
     encrypt = true
     bucket  = "sg-bacon-tf-state"
