@@ -21,4 +21,8 @@ locals {
   mysql_config                          = jsondecode(data.aws_ssm_parameter.database_config.value)
   database_storage                      = 10
   delete_bastion_private_key_on_destroy = coalesce(var.delete_bastion_private_key_on_destroy, false)
+  devops = {
+    git_key_path     = "./git_deploy_key.pem"
+    git_key_pub_path = "./git_deploy_key_pub.pem"
+  }
 }

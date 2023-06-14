@@ -20,11 +20,13 @@ module "vpc" {
   security_group_prefix = var.eks_cluster_name
   has_bastion           = true
 }
+
 module "bastion" {
   source            = "../../../infrastructure_modules/bastion"
   security_group_id = module.vpc.bastion_sg_id
   subnet_id         = module.vpc.public_subnet_ids[0]
   availability_zone = module.vpc.azs[0]
+  is_spot           = false
   tags = {
     source = "Terraform"
     Name   = "Bastion"
@@ -74,6 +76,9 @@ module "eks" {
       instance_type              = var.eks_main_node_group_instance_type
       key_name                   = "main-kp"
       vpc_security_group_ids     = [module.vpc.private_sg_id]
+      iam_role_additional_policies = {
+        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      }
     }
   }
   addon_coredns      = true
@@ -82,10 +87,13 @@ module "eks" {
   create             = var.create_eks
 
 }
-
 module "devops" {
   source         = "../../../infrastructure_modules/devops"
   admin_password = var.jenkins_admin_password
   admin_user     = var.jenkins_admin_user
-  depends_on     = [module.eks]
+  git_key_path = {
+    private = local.devops.git_key_path
+    public  = local.devops.git_key_pub_path
+  }
+  depends_on = [module.eks]
 }
