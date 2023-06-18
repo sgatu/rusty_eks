@@ -22,7 +22,9 @@ locals {
   database_storage                      = 10
   delete_bastion_private_key_on_destroy = coalesce(var.delete_bastion_private_key_on_destroy, false)
   devops = {
-    git_key_path     = "./git_deploy_key.pem"
-    git_key_pub_path = "./git_deploy_key_pub.pem"
+    deploy_key_path     = abspath("./config/deploy_key.pem")
+    deploy_key_pub_path = abspath("./config/deploy_key_pub.pem")
+    seed_key_path       = abspath("./config/devops/seed_key_private.pem")
   }
+
 }

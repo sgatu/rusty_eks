@@ -53,12 +53,6 @@ variable "node_group_defaults" {
   }
 }
 
-variable "addon_coredns" {
-  description = "Add coredns addon to eks"
-  type        = bool
-  default     = false
-}
-
 variable "aws_alb_controller" {
   description = "Add alb controller to eks"
   type        = bool

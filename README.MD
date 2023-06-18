@@ -1,0 +1,1 @@
+decrypt keys with openssl enc -d -in key.enc -aes-256-cbc -pbkdf2 -out key.pem

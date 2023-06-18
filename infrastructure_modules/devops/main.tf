@@ -23,8 +23,12 @@ resource "helm_release" "jenkins" {
     value = var.admin_password
   }
   set_sensitive {
-    name  = "credentials.main_git_credential_id"
+    name  = "credentials.deploy_key_id"
     value = local.git_key_secret_name
+  }
+  set_sensitive {
+    name  = "credentials.seed_key_id"
+    value = local.git_seed_secret_name
   }
   depends_on = [kubernetes_namespace.devops]
 }
@@ -51,7 +55,23 @@ resource "kubernetes_secret" "git_deploy_key" {
   }
   data = {
     username   = "git"
-    privateKey = data.local_file.git_ssh_key.content
+    privateKey = data.local_file.deploy_ssh_key.content
   }
   depends_on = [tls_private_key.git_key]
+}
+
+resource "kubernetes_secret" "git_seed_key" {
+  metadata {
+    name = local.git_seed_secret_name
+    labels = {
+      "env"                                = "prod"
+      "jenkins.io/credentials-type"        = "basicSSHUserPrivateKey"
+      "jenkins.io/credentials-description" = "Jenkins-private-key-to-download-seed-repository"
+    }
+    namespace = "devops"
+  }
+  data = {
+    username   = "git"
+    privateKey = data.local_file.seed_ssh_key.content
+  }
 }

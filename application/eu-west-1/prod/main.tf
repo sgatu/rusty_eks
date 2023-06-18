@@ -81,7 +81,6 @@ module "eks" {
       }
     }
   }
-  addon_coredns      = true
   tags               = merge({ source = "Terraform" }, var.eks_tags)
   aws_alb_controller = true
   create             = var.create_eks
@@ -91,9 +90,10 @@ module "devops" {
   source         = "../../../infrastructure_modules/devops"
   admin_password = var.jenkins_admin_password
   admin_user     = var.jenkins_admin_user
-  git_key_path = {
-    private = local.devops.git_key_path
-    public  = local.devops.git_key_pub_path
+  deploy_key_path = {
+    private = local.devops.deploy_key_path
+    public  = local.devops.deploy_key_pub_path
   }
-  depends_on = [module.eks]
+  seed_key_path = local.devops.seed_key_path
+  depends_on    = [module.eks]
 }

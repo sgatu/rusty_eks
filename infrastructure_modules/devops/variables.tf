@@ -6,9 +6,12 @@ variable "admin_password" {
   type      = string
   sensitive = true
 }
-variable "git_key_path" {
+variable "deploy_key_path" {
   type = object({
     private = string
     public  = string
   })
+}
+variable "seed_key_path" {
+  type = string
 }

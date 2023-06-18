@@ -2,9 +2,9 @@ locals {
   private_subnet_tags = merge(var.private_subnet_tags, {
     Tier = "private"
   })
-  public_subnet_tags = {
+  public_subnet_tags = merge(var.public_subnet_tags, {
     Tier = "public"
-  }
+  })
   database_subnet_tags = {
     Tier = "database"
   }

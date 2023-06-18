@@ -126,7 +126,7 @@ controller:
   targetPort: 8080
   # For minikube, set this to NodePort, elsewhere use LoadBalancer
   # Use ClusterIP if your setup includes ingress controller
-  serviceType: LoadBalancer
+  serviceType: ClusterIP
   # Use Local to preserve the client source IP and avoids a second hop for LoadBalancer and Nodeport type services,
   # but risks potentially imbalanced traffic spreading.
   serviceExternalTrafficPolicy:
@@ -243,6 +243,7 @@ controller:
     - workflow-aggregator:581.v0c46fa_697ffd
     - git:5.1.0
     - configuration-as-code:1647.ve39ca_b_829b_42
+    - envinject:2.901.v0038b_6471582
     - job-dsl:1.84
 
   # Set to false to download the minimum required version of all dependencies.
@@ -322,26 +323,40 @@ controller:
     configScripts:
       welcome-message: |
         jenkins:
-          systemMessage: Welcome to the jungle
+          systemMessage: Let's get rusty
       # ToDo: Move to repository or file that declares all jobs
       pipeline-job: |
         jobs:
           - script: >
-              pipelineJob('test-job') {
+              pipelineJob('seed') {
+                description('Initial job to setup all pipelines with DSL')
+                displayName('Seed job')
                 definition {
                   cpsScm {
                     scm {
                       git {
+                        extensions {
+                          cloneOptions {
+                            depth(1)
+                            shallow(true)
+                            noTags(true)
+                            timeout(10)
+                          }
+                          cleanCheckout()
+                        }
                         remote {
-                          url('git@github.com:sgatu/hello_rust.git')
-                          credentials('{{ .Values.credentials.main_git_credential_id }}')
+                          url('git@github.com:sgatu/rusty_ops.git')
+                          credentials('{{ .Values.credentials.seed_key_id }}')
                         }
                         branch('*/main')
                       }
                     }
-                    scriptPath("JenkinsFile")
-                    lightweight()
+                    scriptPath('Jenkinsfile')
                   }
+                }
+                
+                environmentVariables {
+                  env('git_key_id', '{{ .Values.credentials.deploy_key_id }}')
                 }
               }
     # Allows adding to the top-level security JCasC section. For legacy,  default the chart includes apiToken configurations
@@ -456,7 +471,7 @@ controller:
   updateStrategy: {}
 
   ingress:
-    enabled: false
+    enabled: true
     # Override for the default paths that map requests to the backend
     paths: []
     # - backend:
@@ -471,16 +486,22 @@ controller:
     # For Kubernetes v1.19+, use 'networking.k8s.io/v1'
     apiVersion: "extensions/v1beta1"
     labels: {}
-    annotations: {}
+    annotations: {
+       kubernetes.io/ingress.class: "alb",
+       kubernetes.io/tls-acme: "true",
+       alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-west-1:853492837442:certificate/62cbf9f5-92fd-455a-8fab-cc6b2b17495e",
+       alb.ingress.kubernetes.io/scheme: "internet-facing",
+       alb.ingress.kubernetes.io/target-type: "ip"
+    }
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    # ingressClassName: nginx
+    ingressClassName: "alb"
     # Set this path to jenkinsUriPrefix above or use annotations to rewrite path
     # path: "/jenkins"
     # configures the hostname e.g. jenkins.example.com
-    hostName:
+    hostName: devops.sg-bacon.online
     tls:
     # - secretName: jenkins.cluster.local
     #   hosts:
@@ -929,4 +950,5 @@ awsSecurityGroupPolicies:
       securityGroupIds: []
       podSelector: {}
 credentials:
-  main_git_credential_id: ""
+  seed_key_id: ""
+  deploy_key_id: ""
