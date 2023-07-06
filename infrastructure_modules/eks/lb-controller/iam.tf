@@ -322,7 +322,9 @@ data "aws_iam_policy_document" "lb_controller" {
   }
 
 }
-
+data "local_file" "iam_policy_from_file" {
+  filename = "${path.module}/config/iam.json"
+}
 resource "aws_iam_policy" "lb_controller" {
   depends_on  = [var.mod_dependency]
   count       = var.enabled ? 1 : 0
@@ -330,7 +332,8 @@ resource "aws_iam_policy" "lb_controller" {
   path        = "/"
   description = "Policy for alb-ingress service"
 
-  policy = data.aws_iam_policy_document.lb_controller[0].json
+  //policy = data.aws_iam_policy_document.lb_controller[0].json
+  policy = data.local_file.iam_policy_from_file.content
 }
 
 # Role

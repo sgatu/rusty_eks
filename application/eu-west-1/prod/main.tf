@@ -21,6 +21,13 @@ module "vpc" {
   has_bastion           = true
 }
 
+module "domains" {
+  source = "../../../infrastructure_modules/domains"
+  domains = {
+    "sg-bacon.online" = "Z07853331JG2XXCIJ5YPC"
+  }
+}
+
 module "bastion" {
   source            = "../../../infrastructure_modules/bastion"
   security_group_id = module.vpc.bastion_sg_id
@@ -94,6 +101,8 @@ module "devops" {
     private = local.devops.deploy_key_path
     public  = local.devops.deploy_key_pub_path
   }
-  seed_key_path = local.devops.seed_key_path
-  depends_on    = [module.eks]
+  seed_key_path          = local.devops.seed_key_path
+  domain                 = "devops.sg-bacon.online"
+  domain_certificate_arn = lookup(module.domains.certificate_arns, "sg-bacon.online", "")
+  depends_on             = [module.eks, module.domains]
 }

@@ -30,6 +30,19 @@ resource "helm_release" "jenkins" {
     name  = "credentials.seed_key_id"
     value = local.git_seed_secret_name
   }
+  set_sensitive {
+    name  = "controller.ingress.annotations.alb\\.ingress\\.kubernetes\\.io/certificate-arn"
+    value = var.domain_certificate_arn
+  }
+  set {
+    name  = "controller.ingress.annotations.external-dns\\.alpha\\.kubernetes\\.io/hostname"
+    value = var.domain
+  }
+  set {
+    name  = "controller.ingress.hostName"
+    value = var.domain
+  }
+
   depends_on = [kubernetes_namespace.devops]
 }
 

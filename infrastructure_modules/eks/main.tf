@@ -60,6 +60,18 @@ module "load_balancer_controller" {
 
   count = var.create && var.aws_alb_controller ? 1 : 0
 }
+module "external-dns" {
+  source = "./external-dns"
+
+  cluster_identity_oidc_issuer     = module.eks[0].cluster_oidc_issuer_url
+  cluster_identity_oidc_issuer_arn = module.eks[0].oidc_provider_arn
+  cluster_name                     = module.eks[0].cluster_name
+
+  create_namespace = true
+  depends_on       = [module.eks]
+
+  count = var.create && var.external_dns ? 1 : 0
+}
 
 /*resource "helm_release" "secrets-store-csi" {
   name       = "secrets-store-csi"

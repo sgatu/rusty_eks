@@ -487,9 +487,9 @@ controller:
     apiVersion: "extensions/v1beta1"
     labels: {}
     annotations: {
-       kubernetes.io/ingress.class: "alb",
        kubernetes.io/tls-acme: "true",
-       alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-west-1:853492837442:certificate/62cbf9f5-92fd-455a-8fab-cc6b2b17495e",
+       alb.ingress.kubernetes.io/certificate-arn: "",
+       external-dns.alpha.kubernetes.io/hostname: "",
        alb.ingress.kubernetes.io/scheme: "internet-facing",
        alb.ingress.kubernetes.io/target-type: "ip"
     }
@@ -501,7 +501,7 @@ controller:
     # Set this path to jenkinsUriPrefix above or use annotations to rewrite path
     # path: "/jenkins"
     # configures the hostname e.g. jenkins.example.com
-    hostName: devops.sg-bacon.online
+    hostName: ""
     tls:
     # - secretName: jenkins.cluster.local
     #   hosts:

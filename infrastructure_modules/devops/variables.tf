@@ -15,3 +15,10 @@ variable "deploy_key_path" {
 variable "seed_key_path" {
   type = string
 }
+
+variable "domain" {
+  type = string
+}
+variable "domain_certificate_arn" {
+  type = string
+}

@@ -58,6 +58,11 @@ variable "aws_alb_controller" {
   type        = bool
   default     = true
 }
+variable "external_dns" {
+  description = "Add external_dns helm"
+  type        = bool
+  default     = true
+}
 variable "create" {
   description = "Create eks cluster"
   type        = bool

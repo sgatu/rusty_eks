@@ -37,5 +37,4 @@ resource "aws_spot_instance_request" "this" {
   associate_public_ip_address = var.associate_public_ip_address
   key_name                    = var.key_name
   count                       = var.spot_instance == null ? 0 : 1
-
 }
