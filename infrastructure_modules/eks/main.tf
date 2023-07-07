@@ -1,8 +1,3 @@
-/*resource "aws_iam_policy" "csi_policy" {
-  policy      = data.local_file.csi_policy.content
-  name_prefix = "${var.cluster_name}-CSI"
-}*/
-
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.0"
@@ -34,9 +29,9 @@ module "eks" {
   tags                             = var.tags
 
   aws_auth_users = [
-    {
-      userarn  = "arn:aws:iam::853492837442:root"
-      username = "sg.bacon"
+    for u in var.masters_auth_users : {
+      userarn  = u.arn
+      username = u.username
       groups   = ["system:masters"]
     }
   ]

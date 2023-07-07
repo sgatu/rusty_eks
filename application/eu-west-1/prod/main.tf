@@ -90,6 +90,7 @@ module "eks" {
   }
   tags               = merge({ source = "Terraform" }, var.eks_tags)
   aws_alb_controller = true
+  masters_auth_users = var.eks_masters_auth_users
   create             = var.create_eks
 
 }

@@ -70,5 +70,13 @@ variable "jenkins_admin_password" {
 }
 variable "eks_main_node_group_instance_type" {
   description = "EKS main node group instance type"
-  type = string
+  type        = string
+}
+variable "eks_masters_auth_users" {
+  description = "AWS users with access to EKS cluster"
+  type = list(object({
+    arn      = string
+    username = string
+  }))
+  default = []
 }

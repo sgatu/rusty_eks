@@ -79,3 +79,12 @@ variable "repository_name" {
   type        = string
   default     = null
 }
+
+variable "masters_auth_users" {
+  description = "AWS users with access to EKS cluster"
+  type = list(object({
+    arn      = string
+    username = string
+  }))
+  default = []
+}
