@@ -51,7 +51,7 @@ variable "delete_bastion_private_key_on_destroy" {
 variable "create_rds" {
   description = "Create RDS instance"
   type        = bool
-  default     = false
+  default     = true
 }
 variable "create_eks" {
   description = "Create EKS cluster"

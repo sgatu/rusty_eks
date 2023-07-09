@@ -22,3 +22,13 @@ variable "domain" {
 variable "domain_certificate_arn" {
   type = string
 }
+variable "env" {
+  type        = string
+  description = "Environment"
+}
+variable "aws_user_id" {
+  type = string
+}
+variable "aws_region" {
+  type = string
+}

@@ -13,6 +13,7 @@ data "aws_eks_cluster_auth" "cluster_auth" {
 
 locals {
   region                                = "eu-west-1"
+  aws_user_id                           = "853492837442"
   azs                                   = ["eu-west-1a", "eu-west-1b"]
   cidr                                  = "10.0.0.0/16"
   private_subnets                       = ["10.0.0.0/20", "10.0.16.0/20"]

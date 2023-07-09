@@ -74,10 +74,14 @@ variable "extra_security_group" {
   type        = string
   default     = null
 }
-variable "repository_name" {
-  description = "ECR repository name"
-  type        = string
-  default     = null
+variable "ecr_repositories" {
+  description = "ECR repositories"
+  type = list(object({
+    name       = string
+    scan       = bool
+    max_images = number
+  }))
+  default = []
 }
 
 variable "masters_auth_users" {

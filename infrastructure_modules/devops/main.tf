@@ -60,7 +60,7 @@ resource "kubernetes_secret" "git_deploy_key" {
   metadata {
     name = local.git_key_secret_name
     labels = {
-      "env"                                = "prod"
+      "env"                                = var.env
       "jenkins.io/credentials-type"        = "basicSSHUserPrivateKey"
       "jenkins.io/credentials-description" = "Jenkins-private-key-to-retrieve-git-repositories"
     }
@@ -77,7 +77,7 @@ resource "kubernetes_secret" "git_seed_key" {
   metadata {
     name = local.git_seed_secret_name
     labels = {
-      "env"                                = "prod"
+      "env"                                = var.env
       "jenkins.io/credentials-type"        = "basicSSHUserPrivateKey"
       "jenkins.io/credentials-description" = "Jenkins-private-key-to-download-seed-repository"
     }
@@ -87,4 +87,26 @@ resource "kubernetes_secret" "git_seed_key" {
     username   = "git"
     privateKey = data.local_file.seed_ssh_key.content
   }
+}
+data "template_file" "docker_config_script" {
+  template = file("${path.module}/config/dockerconfig.json")
+  vars = {
+    docker-username = "${data.aws_ecr_authorization_token.aws_ecr_auth_token.user_name}"
+    docker-password = "${data.aws_ecr_authorization_token.aws_ecr_auth_token.password}"
+    docker-server   = "${var.aws_user_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
+    docker-email    = ""
+    auth            = "${data.aws_ecr_authorization_token.aws_ecr_auth_token.authorization_token}"
+  }
+}
+resource "kubernetes_secret" "ecr_secret" {
+  metadata {
+    name = local.ecr_creds_name
+    labels = {
+      "env" = var.env
+    }
+  }
+  data = {
+    ".dockerconfigjson" = "${data.template_file.docker_config_script.rendered}"
+  }
+  type = "kubernetes.io/dockerconfigjson"
 }

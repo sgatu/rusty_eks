@@ -91,13 +91,21 @@ module "eks" {
   tags               = merge({ source = "Terraform" }, var.eks_tags)
   aws_alb_controller = true
   masters_auth_users = var.eks_masters_auth_users
-  create             = var.create_eks
+  ecr_repositories = [
+    {
+      name       = "hello_rust"
+      scan       = false
+      max_images = 12
+    }
+  ]
+  create = var.create_eks
 
 }
 module "devops" {
   source         = "../../../infrastructure_modules/devops"
   admin_password = var.jenkins_admin_password
   admin_user     = var.jenkins_admin_user
+  env            = var.environment
   deploy_key_path = {
     private = local.devops.deploy_key_path
     public  = local.devops.deploy_key_pub_path
@@ -105,5 +113,7 @@ module "devops" {
   seed_key_path          = local.devops.seed_key_path
   domain                 = "devops.sg-bacon.online"
   domain_certificate_arn = lookup(module.domains.certificate_arns, "sg-bacon.online", "")
+  aws_region             = local.region
+  aws_user_id            = local.aws_user_id
   depends_on             = [module.eks, module.domains]
 }

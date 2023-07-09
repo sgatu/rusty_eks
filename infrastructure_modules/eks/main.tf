@@ -1,6 +1,6 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.0"
+  version = "19.15.3"
 
   cluster_name                          = var.cluster_name
   cluster_version                       = var.cluster_version
@@ -76,23 +76,22 @@ module "external-dns" {
   version    = "1.3.0"
   values     = ["${file(format("%s/config/jenkins/values.yaml", path.module))}"]
 }*/
-module "ecr" {
-  source          = "terraform-aws-modules/ecr/aws"
-  repository_name = local.repository_name
-  repository_type = "private"
-  /*repository_read_access_arns       = ["arn:aws:iam::012345678901:role/terraform"]
-  repository_read_write_access_arns = ["arn:aws:iam::012345678901:role/terraform"]*/
-
+module "ecr_repositories" {
+  for_each                = { for repo in var.ecr_repositories : repo.name => repo }
+  source                  = "terraform-aws-modules/ecr/aws"
+  repository_name         = each.value.name
+  repository_type         = "private"
+  repository_force_delete = true
   repository_lifecycle_policy = jsonencode({
     rules = [
       {
         rulePriority = 1,
-        description  = "Keep last 30 images",
+        description  = "Keep last ${each.value.max_images} images",
         selection = {
           tagStatus     = "tagged",
           tagPrefixList = ["v"],
           countType     = "imageCountMoreThan",
-          countNumber   = 12
+          countNumber   = each.value.max_images
         },
         action = {
           type = "expire"
@@ -101,6 +100,7 @@ module "ecr" {
     ]
   })
   registry_scan_rules = [
+    for scan in(each.value.scan ? [1] : []) :
     {
       scan_frequency = "SCAN_ON_PUSH"
       filter         = "*"
@@ -108,6 +108,5 @@ module "ecr" {
     }
   ]
 
-  tags  = var.tags
-  count = var.create ? 1 : 0
+  tags = var.tags
 }

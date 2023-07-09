@@ -7,6 +7,7 @@ locals {
     private = coalesce(var.deploy_key_path.private, "./git_private.pem")
     public  = coalesce(var.deploy_key_path.public, "./git_public.pem")
   }
+  ecr_creds_name = "ecr-sec"
 }
 data "local_file" "deploy_ssh_key" {
   filename   = local.git_key_path.private
@@ -15,3 +16,4 @@ data "local_file" "deploy_ssh_key" {
 data "local_file" "seed_ssh_key" {
   filename = var.seed_key_path
 }
+data "aws_ecr_authorization_token" "aws_ecr_auth_token" {}
